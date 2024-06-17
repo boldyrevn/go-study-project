@@ -1,0 +1,31 @@
+name: user_app
+
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: povar
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - 8080:5432
+  mongo:
+    image: mongo
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    ports:
+      - 27017:27017
+  redis:
+    image: redis
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis-data:/data
+    ports:
+      - 6379:6379
+
+volumes:
+  pg-data:
+  mongo-data:
+  mongo-config:
+  redis-data:
