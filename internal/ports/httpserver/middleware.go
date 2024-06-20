@@ -10,7 +10,7 @@ import (
 func RequestIDMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         requestID := uuid.New()
-        c.Set("requestID", requestID)
+        c.Set("requestID", requestID.String())
         c.Next()
     }
 }

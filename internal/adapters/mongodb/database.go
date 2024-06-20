@@ -26,3 +26,7 @@ func New(ctx context.Context, name string, opts ...*options.ClientOptions) (*Dat
         name: name,
     }, nil
 }
+
+func (db *DataBase) Close(ctx context.Context) error {
+    return db.conn.Disconnect(ctx)
+}

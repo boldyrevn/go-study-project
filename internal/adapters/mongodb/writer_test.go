@@ -3,19 +3,31 @@ package mongodb
 import (
     "context"
     "encoding/json"
+    "fmt"
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/require"
     "go.mongodb.org/mongo-driver/mongo/options"
+    "os"
     "testing"
+    "time"
 )
 
-func TestDataBase_Write(t *testing.T) {
-    ctx := context.Background()
+func TestDataBase(t *testing.T) {
+    var (
+        mongoDBName = os.Getenv("MONGODB_NAME")
+        mongoDBHost = os.Getenv("MONGODB_HOST")
+        mongoDBPort = os.Getenv("MONGODB_PORT")
+    )
 
-    client, err := New(ctx, "test_db", options.Client().SetHosts([]string{"localhost:27017"}))
-    assert.NoError(t, err)
+    ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+    defer cancel()
 
-    err = client.conn.Database("test_db").Drop(ctx)
+    client, err := New(
+        ctx,
+        fmt.Sprintf("%s_test", mongoDBName),
+        options.Client().SetHosts([]string{
+            fmt.Sprintf("%s:%s", mongoDBHost, mongoDBPort),
+        }))
     require.NoError(t, err)
 
     someLog := struct {
@@ -32,4 +44,9 @@ func TestDataBase_Write(t *testing.T) {
     n, err := client.Write(rawLog)
     assert.NoError(t, err)
     assert.Equal(t, len(rawLog), n)
+
+    err = client.conn.Database("test_db").Drop(ctx)
+    require.NoError(t, err)
+
+    err = client.Close(ctx)
 }

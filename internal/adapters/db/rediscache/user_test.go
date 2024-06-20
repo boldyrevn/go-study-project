@@ -6,21 +6,23 @@ import (
     "github.com/boldyrevn/mod-example/internal/adapters/db/mocks"
     "github.com/boldyrevn/mod-example/internal/model"
     "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/require"
+    "os"
+    "strconv"
     "testing"
 )
 
 func TestDataBase(t *testing.T) {
     var (
-        host = "127.0.0.1"
-        port = 6379
+        host = os.Getenv("REDIS_HOST")
+        port = os.Getenv("REDIS_PORT")
         ctx  = context.Background()
     )
+    dbNum, err := strconv.Atoi(os.Getenv("REDIS_TEST_DB"))
+    require.NoError(t, err)
 
     dbMock := mocks.NewDB(t)
-    client, err := New(ctx, host, port, dbMock)
-    assert.NoError(t, err)
-
-    err = client.conn.FlushDB(ctx).Err()
+    client, err := New(ctx, host, port, dbNum+1, dbMock) // plus one to prod database number
     assert.NoError(t, err)
 
     user := model.User{
@@ -46,4 +48,7 @@ func TestDataBase(t *testing.T) {
     dbMock.On("GetUser", ctx, user.ID).Return(model.User{}, errors.New("some error"))
     _, err = client.GetUser(ctx, user.ID)
     assert.Error(t, err)
+
+    err = client.conn.FlushDB(ctx).Err()
+    assert.NoError(t, err)
 }

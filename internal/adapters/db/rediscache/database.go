@@ -12,9 +12,10 @@ type DataBase struct {
     conn       *redis.Client
 }
 
-func New(ctx context.Context, host, port string, wrappedDB db.DB) (*DataBase, error) {
+func New(ctx context.Context, host, port string, db int, wrappedDB db.DB) (*DataBase, error) {
     conn := redis.NewClient(&redis.Options{
         Addr: fmt.Sprintf("%s:%s", host, port),
+        DB:   db,
     })
     if err := conn.Ping(ctx).Err(); err != nil {
         return nil, err
@@ -23,4 +24,8 @@ func New(ctx context.Context, host, port string, wrappedDB db.DB) (*DataBase, er
         internalDB: wrappedDB,
         conn:       conn,
     }, nil
+}
+
+func (db *DataBase) Close() error {
+    return db.conn.Close()
 }

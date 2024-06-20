@@ -2,6 +2,7 @@ package postgres
 
 import (
     "context"
+    "github.com/boldyrevn/mod-example/internal/migrations"
     "github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -17,6 +18,10 @@ func New(ctx context.Context, connString string) (*DataBase, error) {
 
     conn, err := pgxpool.ConnectConfig(ctx, conf)
     if err != nil {
+        return nil, err
+    }
+
+    if err := migrations.Up(context.Background(), conn); err != nil {
         return nil, err
     }
 
